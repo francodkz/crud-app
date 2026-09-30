@@ -1,29 +1,25 @@
-# Gunakan base image resmi Node.js yang ringan
 FROM node:18-slim
 
-# Tentukan direktori kerja di dalam container
+# Install build dependencies yang dibutuhkan oleh sqlite3
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Salin package.json dan package-lock.json terlebih dahulu
-COPY /backend/package*.json ./ ./backend/
+# Salin package.json backend
+COPY backend/package*.json ./backend/
 
-
-# Masuk ke direktori backend untuk install dependencies
+# Install dependencies termasuk sqlite3 di dalam container
 WORKDIR /app/backend
-
-# Install dependencies (gunakan npm ci jika ada package-lock.json, atau npm install)
 RUN npm install --production
 
-# Salin seluruh sisa file project ke dalam container
+# Salin seluruh file backend dan frontend
 WORKDIR /app
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 
-# Cloud Run biasanya menyediakan port melalui variabel environment PORT, 
-# tapi secara default kita bisa set ke port 8080 atau port aplikasi kamu
+WORKDIR /app/backend
+
 ENV PORT=8080
 EXPOSE 8080
 
-# Perintah untuk menjalankan aplikasi kamu
-WORKDIR /app/backend
 CMD ["node", "server.js"]
