@@ -1,13 +1,14 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-
+const path = require('path')
 const app = express();
 const PORT = process.env.PORT || 5050;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Inisialisasi Database SQLite (File database akan otomatis terbuat bernama 'database.sqlite')
 const db = new sqlite3.Database('./database.sqlite', (err) => {
@@ -18,6 +19,10 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
     }
 });
 
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 // Membuat tabel awal (Contoh: tabel items/barang)
 db.run(`CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
