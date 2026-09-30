@@ -1,16 +1,19 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const path = require('path')
+const path = require('path');
+
 const app = express();
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Menyajikan file statis dari folder frontend (posisinya di luar folder backend)
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Inisialisasi Database SQLite (File database akan otomatis terbuat bernama 'database.sqlite')
+// Inisialisasi Database SQLite
 const db = new sqlite3.Database('./database.sqlite', (err) => {
     if (err) {
         console.error('Gagal terhubung ke database:', err.message);
@@ -19,11 +22,7 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
     }
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT,'0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-// Membuat tabel awal (Contoh: tabel items/barang)
+// Membuat tabel awal (items) jika belum ada
 db.run(`CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -34,17 +33,14 @@ db.run(`CREATE TABLE IF NOT EXISTS items (
     }
 });
 
-// Route / Endpoint tes server
-app.get('/', (req, res) => {
+// ==================== ROUTES / ENDPOINTS ====================
+
+// 1. Route tes server
+app.get('/api-test', (req, res) => {
     res.json({ message: 'Backend CRUD API berjalan dengan baik!' });
 });
 
-// Jalankan server
-app.listen(PORT, () => {
-    console.log(`Server backend menyala di port ${PORT}`);
-});
-
-// 1. CREATE: Menambahkan data baru (POST)
+// 2. CREATE: Menambahkan data baru (POST)
 app.post('/items', (req, res) => {
     const { name, quantity } = req.body;
     const query = `INSERT INTO items (name, quantity) VALUES (?, ?)`;
@@ -53,19 +49,19 @@ app.post('/items', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json({ 
+        res.json({
             message: 'Data berhasil ditambahkan!',
             id: this.lastID,
             name,
-            quantity 
+            quantity
         });
     });
 });
 
-// 2. READ: Melihat semua data (GET)
+// 3. READ: Melihat semua data (GET)
 app.get('/items', (req, res) => {
-	console.log('-> Endpoint GET /items dipanggil!'); // TAMBAHKAN INI    
-	const query = `SELECT * FROM items`;
+    console.log('-> Endpoint GET /items dipanggil');
+    const query = `SELECT * FROM items`;
     
     db.all(query, [], (err, rows) => {
         if (err) {
@@ -76,4 +72,10 @@ app.get('/items', (req, res) => {
             data: rows
         });
     });
+});
+
+// ==================== JALANKAN SERVER ====================
+// Hanya dipanggil SEKALI di bagian paling bawah dengan '0.0.0.0'
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server backend menyala di port ${PORT}`);
 });
