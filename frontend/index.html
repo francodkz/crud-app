@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi CRUD Sederhana</title>
+    <!-- Menggunakan Tailwind CSS dari CDN agar cepat dan rapi -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4 text-gray-800">Daftar Barang (CRUD)</h1>
+
+        <!-- Form Tambah Barang -->
+        <form id="itemForm" class="mb-6 flex gap-2">
+            <input type="text" id="name" placeholder="Nama Barang" required class="flex-1 border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="number" id="quantity" placeholder="Jumlah" required class="w-24 border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Tambah</button>
+        </form>
+
+        <!-- Tabel Daftar Barang -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-200 text-left">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="border border-gray-200 p-2">ID</th>
+                        <th class="border border-gray-200 p-2">Nama Barang</th>
+                        <th class="border border-gray-200 p-2">Jumlah</th>
+                        <th class="border border-gray-200 p-2">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="itemList">
+                    <!-- Data dari backend akan dimasukkan ke sini secara otomatis pakai JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Script JavaScript untuk menghubungkan Frontend ke Backend -->
+    <script>
+        const API_URL = 'http://localhost:5050'; // Sesuaikan port backend kamu
+
+        // 1. Fungsi Ambil dan Tampilkan Data (GET)
+        async function fetchItems() {
+            try {
+                const response = await fetch(`${API_URL}/items`);
+                const result = await response.json();
+                const tbody = document.getElementById('itemList');
+                tbody.innerHTML = '';
+
+                result.data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="border border-gray-200 p-2">${item.id}</td>
+                            <td class="border border-gray-200 p-2">${item.name}</td>
+                            <td class="border border-gray-200 p-2">${item.quantity}</td>
+                            <td class="border border-gray-200 p-2">
+                                <span class="text-gray-400 text-sm">Kelola nanti</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Gagal mengambil data:', error);
+            }
+        }
+
+        // 2. Fungsi Tambah Data (POST)
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const quantity = document.getElementById('quantity').value;
+
+            try {
+                const response = await fetch(`${API_URL}/items`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, quantity: Number(quantity) })
+                });
+
+                if (response.ok) {
+                    document.getElementById('itemForm').reset();
+                    fetchItems(); // Refresh tabel otomatis
+                }
+            } catch (error) {
+                console.error('Gagal menambah data:', error);
+            }
+        });
+
+        // Jalankan saat halaman dibuka
+        fetchItems();
+    </script>
+</body>
+</html>
