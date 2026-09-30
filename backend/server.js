@@ -20,7 +20,7 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
 // Membuat tabel awal (Contoh: tabel items/barang)
